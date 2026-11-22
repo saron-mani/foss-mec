@@ -21,14 +21,8 @@ const ABOUT =
   "FOSS Cell of Government Model Engineering College is a student-led community promoting free and open source software. We bring the college's technical initiatives onto one platform — building projects, contributing to global open source communities, learning real-world tools, and running workshops, hands-on sessions and events.";
 
 const PALETTE = {
-  velvet: {
-    dark: { ink: "#f4ecd8", vanta: 0x7d6ba6, bg: 0x15131a },
-    light: { ink: "#17141c", vanta: 0x6f5f97, bg: 0xe5e0ea },
-  },
-  acid: {
-    dark: { ink: "#d4f94e", vanta: 0x8a3fd0, bg: 0x111111 },
-    light: { ink: "#111111", vanta: 0x7a35c0, bg: 0xf1f2ea },
-  },
+  dark: { ink: "#d4f94e", vanta: 0x8a3fd0, bg: 0x111111 },
+  light: { ink: "#111111", vanta: 0x7a35c0, bg: 0xf1f2ea },
 };
 
 /* Solid silhouette of the Tux (one rect per row, first → last glyph) so the giant
@@ -51,6 +45,8 @@ function useInk(canvasRef, heroRef, colors) {
   colorsRef.current = colors;
 
   useEffect(() => {
+    // phones / touch screens: no ink trail at all (saves GPU work, avoids jitter)
+    if (window.matchMedia("(hover: none), (max-width: 860px)").matches) return;
     const cv = canvasRef.current;
     const hero = heroRef.current;
     const ctx = cv.getContext("2d");
@@ -145,8 +141,8 @@ function useInk(canvasRef, heroRef, colors) {
 }
 
 /* ------------------------------------------------------------ component */
-export default function Hero({ theme, palette }) {
-  const colors = PALETTE[palette][theme];
+export default function Hero({ theme }) {
+  const colors = PALETTE[theme];
   const wrap = useRef(null);
   const hero = useRef(null);
   const vantaEl = useRef(null);
@@ -166,34 +162,62 @@ export default function Hero({ theme, palette }) {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const small = window.innerWidth < 760;
     let dead = false;
-    Promise.all([import("three"), import("vanta/dist/vanta.net.min")])
-      .then(([THREE, mod]) => {
-        if (dead || !vantaEl.current) return;
-        window.THREE = THREE;
-        const NET = mod.default || mod;
-        const c = colorsNow.current;
-        vantaFx.current = NET({
-          el: vantaEl.current,
-          THREE,
-          mouseControls: !reduce,
-          touchControls: !reduce,
-          gyroControls: false,
-          minHeight: 200,
-          minWidth: 200,
-          scale: 1,
-          scaleMobile: 1,
-          color: c.vanta,
-          backgroundColor: c.bg,
-          points: small ? 6 : 9,
-          maxDistance: small ? 16 : 22,
-          spacing: small ? 20 : 17,
-          showDots: true,
-          mouseEase: true,
-        });
-      })
-      .catch((err) => console.warn("Vanta could not start (WebGL unavailable?)", err));
+    let timer = 0;
+    let idle = 0;
+
+    const start = () => {
+      if (dead) return;
+      Promise.all([import("three"), import("vanta/dist/vanta.net.min")])
+        .then(([THREE, mod]) => {
+          if (dead || !vantaEl.current) return;
+          window.THREE = THREE;
+          const NET = mod.default || mod;
+          const c = colorsNow.current;
+          vantaFx.current = NET({
+            el: vantaEl.current,
+            THREE,
+            mouseControls: !reduce,
+            touchControls: !reduce,
+            gyroControls: false,
+            minHeight: 200,
+            minWidth: 200,
+            scale: 1,
+            scaleMobile: 1,
+            color: c.vanta,
+            backgroundColor: c.bg,
+            points: small ? 6 : 9,
+            maxDistance: small ? 16 : 22,
+            spacing: small ? 20 : 17,
+            showDots: true,
+            mouseEase: true,
+          });
+          vantaEl.current.classList.add("ready");
+        })
+        .catch((err) => console.warn("Vanta could not start (WebGL unavailable?)", err));
+    };
+
+    // The net is decorative — building it (three.js parse + shader compile) during
+    // the intro was the main source of load jank. Wait until the intro has played,
+    // then build it in idle time and fade it in.
+    const schedule = () => {
+      if (dead) return;
+      timer = window.setTimeout(() => {
+        if (dead) return;
+        if ("requestIdleCallback" in window) {
+          idle = window.requestIdleCallback(start, { timeout: 1200 });
+        } else {
+          timer = window.setTimeout(start, 0);
+        }
+      }, reduce ? 0 : 1400);
+    };
+    if (document.fonts) document.fonts.ready.then(schedule);
+    else schedule();
+
     return () => {
       dead = true;
+      clearTimeout(timer);
+      if (idle && window.cancelIdleCallback) window.cancelIdleCallback(idle);
+      vantaEl.current?.classList.remove("ready");
       if (vantaFx.current) vantaFx.current.destroy();
       vantaFx.current = null;
     };
@@ -204,7 +228,7 @@ export default function Hero({ theme, palette }) {
     if (!fx) return;
     fx.setOptions({ color: colors.vanta, backgroundColor: colors.bg });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [theme, palette]);
+  }, [theme]);
 
   /* Vanta's net tilts toward the pointer and stays tilted — ease it back to rest
      when the pointer stops moving or leaves the hero. */
@@ -410,8 +434,9 @@ export default function Hero({ theme, palette }) {
 
 const css = `
 .hero{position:relative;height:100vh;min-height:680px;overflow:hidden;isolation:isolate}
-.hero-vanta{position:absolute;inset:0;z-index:0;opacity:.55;will-change:transform}
-[data-theme="light"] .hero-vanta{opacity:.7}
+.hero-vanta{position:absolute;inset:0;z-index:0;opacity:0;transition:opacity .9s ease;will-change:transform}
+.hero-vanta.ready{opacity:.55}
+[data-theme="light"] .hero-vanta.ready{opacity:.7}
 .hero-fade{position:absolute;inset:auto 0 0 0;height:30%;z-index:1;pointer-events:none;
   background:linear-gradient(to bottom,transparent,var(--bg))}
 .layer{position:absolute;left:0;right:0;z-index:1;pointer-events:none;will-change:transform}
@@ -448,6 +473,7 @@ const css = `
 
 .ink{position:absolute;inset:0;width:100%;height:100%;z-index:4;pointer-events:none}
 [data-theme="dark"] .ink{mix-blend-mode:difference}
+@media (hover:none),(max-width:860px){.ink{display:none}}
 
 /* about */
 .about{position:relative;padding:clamp(5rem,14vh,10rem) 0 0;overflow:hidden}

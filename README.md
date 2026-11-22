@@ -30,3 +30,6 @@ All CSS lives inside the components (no .css files).
 ## Data
 Scraped from foss.mec.ac.in (its Sanity CMS) and embedded as fallback. Events.jsx / Team.jsx also query the CMS
 at runtime and merge/replace with fresher data when reachable.
+
+## Theme
+Dark by default with a dark/light toggle in the top bar. Palette: near-black · acid lime · violet. Tokens are at the top of `src/App.jsx`; the Vanta/ink colours are in `Hero.jsx`.

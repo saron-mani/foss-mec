@@ -23,7 +23,7 @@ export const goTo = (id) => {
   else target.scrollIntoView({ behavior: "smooth" });
 };
 
-export default function Navbar({ theme, palette, onToggle, onPalette }) {
+export default function Navbar({ theme, onToggle }) {
   const [open, setOpen] = useState(false);
   const bar = useRef(null);
   const prog = useRef(null);
@@ -86,15 +86,6 @@ export default function Navbar({ theme, palette, onToggle, onPalette }) {
 
         <div className="nv-right">
           <button
-            className="nv-pal"
-            onClick={onPalette}
-            aria-label={`Colour palette: ${palette === "velvet" ? "After Dark" : "Acid"}. Switch palette`}
-            title={`Palette: ${palette === "velvet" ? "After Dark" : "Acid"} — click to switch`}
-          >
-            <i />
-            <i />
-          </button>
-          <button
             className="nv-theme"
             onClick={onToggle}
             role="switch"
@@ -142,11 +133,6 @@ const css = `
 .nv-join:hover{background:var(--accent2);color:#000}
 
 /* theme switch */
-.nv-pal{position:relative;flex:none;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--card);transition:transform .4s cubic-bezier(.2,.8,.2,1)}
-.nv-pal:hover{transform:rotate(180deg)}
-.nv-pal i{position:absolute;top:50%;width:13px;height:13px;border-radius:50%;transform:translateY(-50%)}
-.nv-pal i:first-child{left:7px;background:var(--accent)}
-.nv-pal i:last-child{right:7px;background:var(--accent2)}
 .nv-join-m{display:none}
 .nv-theme{position:relative;display:flex;align-items:center;justify-content:space-between;width:62px;height:32px;padding:0 8px;
   border:1px solid var(--line);border-radius:999px;background:var(--card)}
@@ -173,7 +159,6 @@ const css = `
   .nv-theme{width:68px;height:40px}
   .nv-theme .knob{width:32px;height:32px;top:3px;left:3px}
   [data-theme="dark"] .nv-theme .knob{transform:translateX(28px)}
-  .nv-pal{width:40px;height:40px}
   .nv-links{position:absolute;top:100%;left:0;right:0;flex-direction:column;gap:0;background:var(--bg);border-bottom:1px solid var(--line);
     max-height:0;overflow:hidden;transition:max-height .5s cubic-bezier(.65,0,.15,1)}
   .nv-links.open{max-height:420px}

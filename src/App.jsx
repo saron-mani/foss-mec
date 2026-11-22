@@ -14,37 +14,33 @@ import { ReactBitsStyles } from "./components/ReactBits.jsx";
 
 gsap.registerPlugin(ScrollTrigger);
 
-/* Global styles + theme tokens. Dark is the default; light is the pale-blue
-   palette lifted from the reference video. */
+/* Global styles + theme tokens. Dark is the default; light is the toggle option. */
 const css = `
-/* Two palettes × dark/light.
-   velvet = golden yellow · dusty purple · charcoal
-   acid   = near-black · acid lime · violet   (default) */
+/* Self-hosted fonts. font-display:block keeps the fallback from ever painting, so
+   the hero's giant type / ASCII Tux never jump when the real font arrives. Preloaded in index.html. */
+@font-face{font-family:'Anton';font-style:normal;font-weight:400;font-display:block;src:url('/fonts/anton-400.woff2') format('woff2')}
+@font-face{font-family:'DM Mono';font-style:normal;font-weight:300;font-display:block;src:url('/fonts/dm-mono-300.woff2') format('woff2')}
+@font-face{font-family:'DM Mono';font-style:normal;font-weight:400;font-display:block;src:url('/fonts/dm-mono-400.woff2') format('woff2')}
+@font-face{font-family:'DM Mono';font-style:normal;font-weight:500;font-display:block;src:url('/fonts/dm-mono-500.woff2') format('woff2')}
+@font-face{font-family:'Space Mono';font-style:normal;font-weight:400;font-display:block;src:url('/fonts/space-mono-400.woff2') format('woff2')}
+@font-face{font-family:'Space Mono';font-style:normal;font-weight:700;font-display:block;src:url('/fonts/space-mono-700.woff2') format('woff2')}
+@font-face{font-family:'Space Mono';font-style:italic;font-weight:400;font-display:block;src:url('/fonts/space-mono-italic-400.woff2') format('woff2')}
+@font-face{font-family:'Space Mono';font-style:italic;font-weight:700;font-display:block;src:url('/fonts/space-mono-italic-700.woff2') format('woff2')}
+
+/* Palette: near-black · acid lime · violet (dark), with a light variant for the toggle */
 :root,[data-theme="dark"]{
-  --bg:#15131a; --bg2:#1d1a25; --fg:#f4ecd8; --muted:#a59cb4; --line:rgba(244,236,216,.14);
-  --card:rgba(157,139,199,.07); --accent:#f6b93b; --accent2:#9a87cc; --accent3:#b9a8e6; --ink:#f4ecd8;
-  --giant:#f6b93b; --alt:#7d6ba6; --pill:transparent; --pillpad:0em;
-  --grad:linear-gradient(100deg,#f6b93b 0%,#ffd98a 100%); --glow1:rgba(246,185,59,.10); --glow2:rgba(125,107,166,.20);
-  --grain:.06; color-scheme:dark;
-}
-[data-theme="light"]{
-  --bg:#e5e0ea; --bg2:#d9d2e2; --fg:#17141c; --muted:#5b5069; --line:rgba(23,20,28,.2);
-  --card:rgba(255,255,255,.5); --accent:#b87500; --accent2:#6a55a0; --accent3:#5a4690; --ink:#17141c;
-  --giant:#f2b01e; --alt:#6f5f97;
-  --grad:linear-gradient(100deg,#e09a00 0%,#a85d00 100%); --glow1:rgba(242,176,30,.20); --glow2:rgba(106,85,160,.14);
-  --grain:.09; color-scheme:light;
-}
-[data-palette="acid"][data-theme="dark"]{
   --bg:#111111; --bg2:#181818; --fg:#f5f5ef; --muted:#9b9b92; --line:rgba(255,255,255,.14);
   --card:rgba(255,255,255,.045); --accent:#d4f94e; --accent2:#a85cf2; --accent3:#cfa4f7; --ink:#d4f94e;
   --giant:#f5f5ef; --alt:#d4f94e; --pill:#d4f94e; --pillpad:.35em;
   --grad:linear-gradient(100deg,#d4f94e 0%,#f2ffa8 100%); --glow1:rgba(168,92,242,.22); --glow2:rgba(212,249,78,.07);
+  --grain:.06; color-scheme:dark;
 }
-[data-palette="acid"][data-theme="light"]{
+[data-theme="light"]{
   --bg:#f1f2ea; --bg2:#e4e6d8; --fg:#111111; --muted:#55594a; --line:rgba(17,17,17,.2);
   --card:rgba(255,255,255,.6); --accent:#5a1fa8; --accent2:#7c2fd0; --accent3:#5a1fa8; --ink:#111111;
   --giant:#111111; --alt:#b6e027; --pill:#111111; --pillpad:.35em;
   --grad:linear-gradient(100deg,#5a1fa8 0%,#b04df0 100%); --glow1:rgba(182,224,39,.30); --glow2:rgba(124,47,208,.14);
+  --grain:.09; color-scheme:light;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{background:var(--bg);-webkit-text-size-adjust:100%}
@@ -67,7 +63,7 @@ html.lenis,html.lenis body{height:auto}
 .lenis.lenis-smooth iframe{pointer-events:none}
 
 /* film grain */
-body::after{content:"";position:fixed;inset:-50%;z-index:90;pointer-events:none;opacity:var(--grain);
+body::after{content:"";position:fixed;inset:-10%;z-index:90;pointer-events:none;opacity:var(--grain);will-change:transform;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='.55'/></svg>");
   animation:grain 1.2s steps(6) infinite}
 @keyframes grain{0%{transform:translate(0,0)}20%{transform:translate(-3%,2%)}40%{transform:translate(2%,-3%)}60%{transform:translate(-2%,-1%)}80%{transform:translate(3%,3%)}100%{transform:translate(0,0)}}
@@ -83,7 +79,7 @@ body::after{content:"";position:fixed;inset:-50%;z-index:90;pointer-events:none;
 .btn-solid:hover{background:var(--accent2);border-color:var(--accent2);color:#000}
 
 html{-webkit-tap-highlight-color:transparent}
-@media (hover:none){.ev-img,.tm-photo img,.gl-item img{filter:none!important}}
+@media (hover:none){.ev-img,.tm-photo img,.gl-item img{filter:none!important}body::after{animation:none}}
 @media (max-width:760px){
   body{font-size:14px}
   .btn{min-height:46px;padding:.8rem 1.2rem}
@@ -99,31 +95,21 @@ const readTheme = () => {
   }
 };
 
-const readPalette = () => {
-  try {
-    return localStorage.getItem("foss-palette") || "acid";
-  } catch {
-    return "acid";
-  }
-};
-const META_BG = { velvet: { dark: "#15131a", light: "#e5e0ea" }, acid: { dark: "#111111", light: "#f1f2ea" } };
+const META_BG = { dark: "#111111", light: "#f1f2ea" };
 
 export default function App() {
   const [theme, setTheme] = useState(readTheme);
-  const [palette, setPalette] = useState(readPalette);
 
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = theme;
-    document.documentElement.dataset.palette = palette;
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute("content", META_BG[palette][theme]);
+    if (meta) meta.setAttribute("content", META_BG[theme]);
     try {
       localStorage.setItem("foss-theme", theme);
-      localStorage.setItem("foss-palette", palette);
     } catch {
       /* storage can be unavailable (private mode) — theme just won't persist */
     }
-  }, [theme, palette]);
+  }, [theme]);
 
   /* Lenis smooth scroll, driven by GSAP's ticker so ScrollTrigger stays in sync */
   useEffect(() => {
@@ -140,12 +126,24 @@ export default function App() {
     gsap.ticker.add(tick);
     gsap.ticker.lagSmoothing(0);
 
-    const refresh = () => ScrollTrigger.refresh();
-    if (document.fonts) document.fonts.ready.then(refresh);
-    window.addEventListener("load", refresh);
+    // A single refresh once fonts settle. The old load + fonts.ready pair could
+    // fire twice mid-intro and make the scroll/trigger positions jump.
+    let dead = false;
+    let idle = 0;
+    const refresh = () => {
+      if (!dead) requestAnimationFrame(() => !dead && ScrollTrigger.refresh());
+    };
+    if (document.fonts) {
+      document.fonts.ready.then(() => {
+        if (dead) return;
+        if ("requestIdleCallback" in window) idle = requestIdleCallback(refresh, { timeout: 800 });
+        else refresh();
+      });
+    }
 
     return () => {
-      window.removeEventListener("load", refresh);
+      dead = true;
+      if (idle && window.cancelIdleCallback) window.cancelIdleCallback(idle);
       gsap.ticker.remove(tick);
       lenis.destroy();
       delete window.__lenis;
@@ -156,14 +154,9 @@ export default function App() {
     <>
       <style>{css}</style>
       <ReactBitsStyles />
-      <Navbar
-        theme={theme}
-        palette={palette}
-        onToggle={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
-        onPalette={() => setPalette((p) => (p === "velvet" ? "acid" : "velvet"))}
-      />
+      <Navbar theme={theme} onToggle={() => setTheme((t) => (t === "dark" ? "light" : "dark"))} />
       <main>
-        <Hero theme={theme} palette={palette} />
+        <Hero theme={theme} />
         <Events />
         <About />
         <Team />
