@@ -23,7 +23,7 @@ export const goTo = (id) => {
   else target.scrollIntoView({ behavior: "smooth" });
 };
 
-export default function Navbar({ theme, onToggle }) {
+export default function Navbar({ theme, palette, onToggle, onPalette }) {
   const [open, setOpen] = useState(false);
   const bar = useRef(null);
   const prog = useRef(null);
@@ -50,6 +50,13 @@ export default function Navbar({ theme, onToggle }) {
     return () => ctx.revert();
   }, []);
 
+  useEffect(() => {
+    if (!open) return;
+    const k = (e) => e.key === "Escape" && setOpen(false);
+    window.addEventListener("keydown", k);
+    return () => window.removeEventListener("keydown", k);
+  }, [open]);
+
   const nav = (id) => (e) => {
     e.preventDefault();
     setOpen(false);
@@ -72,9 +79,21 @@ export default function Navbar({ theme, onToggle }) {
               <DecryptedText text={l.label} />
             </a>
           ))}
+          <a className="nv-join-m" href={JOIN} target="_blank" rel="noreferrer">
+            JOIN FOSS →
+          </a>
         </nav>
 
         <div className="nv-right">
+          <button
+            className="nv-pal"
+            onClick={onPalette}
+            aria-label={`Colour palette: ${palette === "velvet" ? "After Dark" : "Acid"}. Switch palette`}
+            title={`Palette: ${palette === "velvet" ? "After Dark" : "Acid"} — click to switch`}
+          >
+            <i />
+            <i />
+          </button>
           <button
             className="nv-theme"
             onClick={onToggle}
@@ -123,6 +142,12 @@ const css = `
 .nv-join:hover{background:var(--accent2);color:#000}
 
 /* theme switch */
+.nv-pal{position:relative;flex:none;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--card);transition:transform .4s cubic-bezier(.2,.8,.2,1)}
+.nv-pal:hover{transform:rotate(180deg)}
+.nv-pal i{position:absolute;top:50%;width:13px;height:13px;border-radius:50%;transform:translateY(-50%)}
+.nv-pal i:first-child{left:7px;background:var(--accent)}
+.nv-pal i:last-child{right:7px;background:var(--accent2)}
+.nv-join-m{display:none}
 .nv-theme{position:relative;display:flex;align-items:center;justify-content:space-between;width:62px;height:32px;padding:0 8px;
   border:1px solid var(--line);border-radius:999px;background:var(--card)}
 .nv-theme .ic{width:14px;height:14px;position:relative;z-index:2;opacity:.75}
@@ -139,12 +164,21 @@ const css = `
 .nv-burger[aria-expanded="true"] span:last-child{transform:translateY(-4px) rotate(-45deg)}
 
 @media (max-width:760px){
-  .nv-burger{display:block}
+  .nv-in{padding:.55rem 1rem;gap:.6rem}
+  .nv-right{gap:.5rem}
+  .nv-burger{display:block;width:44px;height:44px}
+  .nv-burger span{left:11px;right:11px}
+  .nv-burger span:first-child{top:16px}.nv-burger span:last-child{top:26px}
   .nv-join{display:none}
+  .nv-theme{width:68px;height:40px}
+  .nv-theme .knob{width:32px;height:32px;top:3px;left:3px}
+  [data-theme="dark"] .nv-theme .knob{transform:translateX(28px)}
+  .nv-pal{width:40px;height:40px}
   .nv-links{position:absolute;top:100%;left:0;right:0;flex-direction:column;gap:0;background:var(--bg);border-bottom:1px solid var(--line);
     max-height:0;overflow:hidden;transition:max-height .5s cubic-bezier(.65,0,.15,1)}
-  .nv-links.open{max-height:320px}
-  .nv-links a{padding:1rem clamp(1rem,4vw,3rem);border-top:1px solid var(--line);font-size:14px}
+  .nv-links.open{max-height:420px}
+  .nv-links a{padding:1.05rem 1rem;border-top:1px solid var(--line);font-size:14px;min-height:52px;display:flex;align-items:center}
   .nv-links a::after{display:none}
+  .nv-links .nv-join-m{display:flex;justify-content:center;margin:.8rem 1rem 1rem;border:1px solid var(--fg);border-radius:999px;background:var(--fg);color:var(--bg);min-height:48px}
 }
 `;

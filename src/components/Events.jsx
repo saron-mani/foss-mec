@@ -153,11 +153,21 @@ export default function Events() {
     });
 
     mm.add("(max-width: 860px)", () => {
-      gsap.utils.toArray(".ev-card").forEach((card) => {
-        gsap.from(card, { y: 70, opacity: 0, duration: 1, ease: "power3.out", scrollTrigger: { trigger: card, start: "top 90%" } });
-        gsap.fromTo(card.querySelector(".ev-img"), { yPercent: -8 }, { yPercent: 8, ease: "none", scrollTrigger: { trigger: card, start: "top bottom", end: "bottom top", scrub: true } });
-      });
+      // phones: native swipe carousel (scroll-snap) instead of a long vertical list
+      const t = track.current;
+      t.scrollLeft = 0;
+      const onScroll = () => {
+        const max = t.scrollWidth - t.clientWidth;
+        const prog = max > 0 ? t.scrollLeft / max : 0;
+        const idx = Math.min(n, Math.max(1, Math.round(prog * (n - 1)) + 1));
+        if (counter.current) counter.current.textContent = `${pad(idx)} / ${pad(n)}`;
+        if (bar.current) bar.current.style.transform = `scaleX(${Math.max(prog, 1 / n)})`;
+      };
+      t.addEventListener("scroll", onScroll, { passive: true });
+      onScroll();
+      gsap.from(".ev-card", { x: 60, opacity: 0, duration: 0.9, ease: "power3.out", stagger: 0.08, scrollTrigger: { trigger: t, start: "top 88%" } });
       gsap.to(".ev-ghost", { xPercent: -30, ease: "none", scrollTrigger: { trigger: sec.current, start: "top bottom", end: "bottom top", scrub: 1.4 } });
+      return () => t.removeEventListener("scroll", onScroll);
     });
 
     return () => mm.revert();
@@ -217,6 +227,7 @@ export default function Events() {
                   <div className="ev-img ev-noimg">{"</>"}</div>
                 )}
                 <span className="ev-idx">{pad(i + 1)}</span>
+                {i === 0 && year === "all" && <span className="ev-new">LATEST</span>}
                 <span className="ev-year">{e.year}</span>
               </div>
               <div className="ev-body">
@@ -230,6 +241,7 @@ export default function Events() {
             </SpotlightCard>
           ))}
         </div>
+        <p className="ev-hint" aria-hidden="true">← swipe to browse →</p>
       </div>
     </section>
   );
@@ -243,7 +255,7 @@ const css = `
   font-size:clamp(14rem,44vw,44rem);line-height:1;color:transparent;-webkit-text-stroke:1px var(--line);pointer-events:none;user-select:none;will-change:transform}
 
 .ev-head{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:flex-end;gap:2rem;padding:0 clamp(1rem,5vw,4rem)}
-.ev-title{font-weight:900;font-size:clamp(2rem,4.8vw,4.4rem);line-height:1;letter-spacing:-.02em;margin:.9rem 0 .7rem}
+.ev-title{font-weight:700;font-size:clamp(1.5rem,3.2vw,3.1rem);line-height:1.1;letter-spacing:-.05em;margin:.9rem 0 .7rem}
 .ev-title em{font-style:italic;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;padding-right:.07em}
 .ev-sub{font-size:12.5px;color:var(--muted);max-width:44ch}
 .ev-side{display:flex;flex-direction:column;align-items:flex-end;gap:1rem}
@@ -259,7 +271,7 @@ const css = `
 .ev-card{flex:none;width:clamp(290px,27vw,430px);height:clamp(420px,62vh,600px);display:flex;flex-direction:column;
   border:1px solid var(--line);border-radius:18px;background:var(--card);backdrop-filter:blur(6px)}
 .ev-media{position:relative;flex:1 1 0;min-height:0;overflow:hidden;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--fg) 8%,transparent)}
-.ev-img{position:absolute;top:0;left:-10%;width:120%;height:100%;object-fit:cover;filter:grayscale(.85) contrast(1.05);
+.ev-img{position:absolute;top:0;left:-10%;width:120%;max-width:none;height:100%;object-fit:cover;filter:grayscale(.85) contrast(1.05);
   transition:filter .6s,transform .8s cubic-bezier(.2,.8,.2,1)}
 .ev-card:hover .ev-img{filter:none}
 .ev-noimg{display:grid;place-items:center;font-size:3rem;color:var(--muted)}
@@ -268,20 +280,32 @@ const css = `
 .ev-idx{left:.8rem}.ev-year{right:.8rem;color:var(--accent2)}
 .ev-body{padding:1.1rem 1.2rem 1.25rem;display:flex;flex-direction:column;gap:.45rem}
 .ev-when{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent3)}
-.ev-name{font-weight:900;font-size:clamp(1.3rem,1.9vw,1.75rem);line-height:1.08;letter-spacing:-.01em}
+.ev-name{font-weight:700;font-size:clamp(1.05rem,1.4vw,1.3rem);line-height:1.15;letter-spacing:-.04em}
 .ev-desc{font-size:12px;line-height:1.65;color:var(--muted);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .ev-link{margin-top:.3rem;font-size:11.5px;letter-spacing:.14em;align-self:flex-start;border-bottom:1px solid var(--fg);padding-bottom:2px}
 
+.ev-new{position:absolute;left:.8rem;bottom:.8rem;font-size:10.5px;letter-spacing:.14em;padding:.28rem .65rem;border-radius:999px;background:var(--accent);color:var(--bg);font-weight:500}
+.ev-hint{display:none}
+
 @media (max-width:860px){
-  .ev-pin{min-height:0;padding:5rem 0 4rem;justify-content:flex-start}
-  .ev-head{flex-direction:column;align-items:flex-start}
-  .ev-side{align-items:flex-start}
-  .ev-filters{justify-content:flex-start}
-  .ev-count{display:none}
-  .ev-track{flex-direction:column;width:auto;padding:0 clamp(1rem,5vw,2rem)}
-  .ev-card{width:100%;height:auto}
-  .ev-media{flex:none;height:min(62vw,340px)}
-  .ev-img{left:0;top:-8%;width:100%;height:116%}
-  .ev-desc{-webkit-line-clamp:unset}
+  .ev-pin{min-height:0;padding:5rem 0 3rem;justify-content:flex-start;gap:1.2rem}
+  .ev-head{flex-direction:column;align-items:flex-start;gap:1.1rem}
+  .ev-side{align-items:stretch;width:100%;gap:.9rem}
+  .ev-filters{justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -1rem;padding:0 1rem}
+  .ev-filters::-webkit-scrollbar{display:none}
+  .ev-filters button{flex:none;min-height:42px;padding:.55rem 1.1rem}
+  .ev-count{justify-content:space-between;width:100%}
+  .ev-bar{flex:1}
+  .ev-track{width:auto;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scroll-padding:0 1rem;
+    padding:.4rem 1rem 1rem;scrollbar-width:none;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}
+  .ev-track::-webkit-scrollbar{display:none}
+  .ev-card{width:min(80vw,350px);height:auto;scroll-snap-align:center}
+  .ev-media{flex:none;height:min(70vw,290px)}
+  .ev-img{left:0;top:0;width:100%;height:100%}
+  .ev-desc{-webkit-line-clamp:4;font-size:12.5px}
+  .ev-when,.ev-link{font-size:11.5px}
+  .ev-link{min-height:44px;display:inline-flex;align-items:center}
+  .ev-hint{display:block;text-align:center;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);animation:nudge 2.4s ease-in-out infinite}
+  @keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(6px)}}
 }
 `;

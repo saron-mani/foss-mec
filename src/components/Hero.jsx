@@ -21,8 +21,14 @@ const ABOUT =
   "FOSS Cell of Government Model Engineering College is a student-led community promoting free and open source software. We bring the college's technical initiatives onto one platform — building projects, contributing to global open source communities, learning real-world tools, and running workshops, hands-on sessions and events.";
 
 const PALETTE = {
-  dark: { ink: "#eef1f8", vanta: 0x4f78e8, bg: 0x06080f },
-  light: { ink: "#050505", vanta: 0x1d44e6, bg: 0xb4dbe9 },
+  velvet: {
+    dark: { ink: "#f4ecd8", vanta: 0x7d6ba6, bg: 0x15131a },
+    light: { ink: "#17141c", vanta: 0x6f5f97, bg: 0xe5e0ea },
+  },
+  acid: {
+    dark: { ink: "#d4f94e", vanta: 0x8a3fd0, bg: 0x111111 },
+    light: { ink: "#111111", vanta: 0x7a35c0, bg: 0xf1f2ea },
+  },
 };
 
 /* Solid silhouette of the Tux (one rect per row, first → last glyph) so the giant
@@ -40,9 +46,9 @@ const MARQUEE = [
 ];
 
 /* ------------------------------------------------------------ ink trail */
-function useInk(canvasRef, heroRef, theme) {
-  const themeRef = useRef(theme);
-  themeRef.current = theme;
+function useInk(canvasRef, heroRef, colors) {
+  const colorsRef = useRef(colors);
+  colorsRef.current = colors;
 
   useEffect(() => {
     const cv = canvasRef.current;
@@ -109,7 +115,7 @@ function useInk(canvasRef, heroRef, theme) {
       ctx.clearRect(0, 0, w, h);
       while (pts.length && now - pts[0].t > LIFE) pts.shift();
       if (pts.length < 2) return;
-      ctx.strokeStyle = ctx.fillStyle = PALETTE[themeRef.current].ink;
+      ctx.strokeStyle = ctx.fillStyle = colorsRef.current.ink;
       ctx.lineCap = ctx.lineJoin = "round";
       for (let i = 1; i < pts.length; i++) {
         const a = pts[i - 1];
@@ -139,7 +145,8 @@ function useInk(canvasRef, heroRef, theme) {
 }
 
 /* ------------------------------------------------------------ component */
-export default function Hero({ theme }) {
+export default function Hero({ theme, palette }) {
+  const colors = PALETTE[palette][theme];
   const wrap = useRef(null);
   const hero = useRef(null);
   const vantaEl = useRef(null);
@@ -150,11 +157,11 @@ export default function Hero({ theme }) {
   const tuxS = useRef(null);
   const tuxP = useRef(null);
 
-  useInk(ink, hero, theme);
+  useInk(ink, hero, colors);
 
   /* Vanta.js — three + vanta are loaded lazily so they never block first paint */
-  const themeNow = useRef(theme);
-  themeNow.current = theme;
+  const colorsNow = useRef(colors);
+  colorsNow.current = colors;
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const small = window.innerWidth < 760;
@@ -164,7 +171,7 @@ export default function Hero({ theme }) {
         if (dead || !vantaEl.current) return;
         window.THREE = THREE;
         const NET = mod.default || mod;
-        const c = PALETTE[themeNow.current];
+        const c = colorsNow.current;
         vantaFx.current = NET({
           el: vantaEl.current,
           THREE,
@@ -195,9 +202,9 @@ export default function Hero({ theme }) {
   useEffect(() => {
     const fx = vantaFx.current;
     if (!fx) return;
-    const c = PALETTE[theme];
-    fx.setOptions({ color: c.vanta, backgroundColor: c.bg });
-  }, [theme]);
+    fx.setOptions({ color: colors.vanta, backgroundColor: colors.bg });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [theme, palette]);
 
   /* Vanta's net tilts toward the pointer and stays tilted — ease it back to rest
      when the pointer stops moving or leaves the hero. */
@@ -311,7 +318,7 @@ export default function Hero({ theme }) {
           <div ref={giantP}>
             <h1 className="giant" aria-label="FOSS MEC">
               {"FOSS MEC".split("").map((c, i) => (
-                <span key={i} className="gch" aria-hidden="true">
+                <span key={i} className={`gch${i > 4 ? " alt" : ""}`} aria-hidden="true">
                   <span className="gch-in">{c === " " ? " " : c}</span>
                 </span>
               ))}
@@ -412,7 +419,8 @@ const css = `
 /* giant type — sits behind the ASCII penguin (Mustang-style layering) */
 .giant-wrap{top:10vh;display:flex;justify-content:center}
 .giant{font-family:'Anton',Impact,'Arial Narrow',sans-serif;font-weight:400;text-transform:uppercase;white-space:nowrap;
-  font-size:min(25vw,47vh);line-height:.9;letter-spacing:-.005em;color:var(--fg);user-select:none}
+  font-size:min(25vw,47vh);line-height:.9;letter-spacing:-.005em;color:var(--giant);user-select:none}
+.gch.alt{color:var(--alt)}
 .gch{display:inline-block;overflow:hidden;vertical-align:top;padding:.02em .004em 0}
 .gch-in{display:inline-block}
 
@@ -432,8 +440,8 @@ const css = `
   display:flex;justify-content:space-between;align-items:flex-end;gap:2rem;pointer-events:none}
 .hero-copy a{pointer-events:auto}
 .kicker{font-size:11px;letter-spacing:.16em;color:var(--muted);margin-bottom:1rem}
-.headline{font-weight:900;font-size:clamp(2rem,4.6vw,4.6rem);line-height:.98;letter-spacing:-.02em;text-shadow:0 0 24px var(--bg)}
-.headline em{font-style:italic;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;padding-right:.07em}
+.headline{font-weight:700;font-size:clamp(1.5rem,3vw,3rem);line-height:1.12;letter-spacing:-.05em;text-shadow:0 0 24px var(--bg)}
+.headline em{display:inline-block;padding:.02em var(--pillpad) .08em;margin-left:calc(var(--pillpad) * -1);border-radius:999px;box-shadow:inset 0 0 0 1.5px var(--pill);font-style:italic;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;padding-right:.07em}
 .hc-right{max-width:330px;text-align:left}
 .lede{font-size:12.5px;line-height:1.75;color:var(--muted);margin-bottom:1.2rem;text-shadow:0 0 14px var(--bg)}
 .cta{display:flex;flex-wrap:wrap;gap:.7rem}
@@ -446,7 +454,7 @@ const css = `
 .ab-ghost{position:absolute;top:2rem;left:0;white-space:nowrap;font-family:'Anton',Impact,sans-serif;font-size:clamp(9rem,26vw,26rem);line-height:1;
   color:transparent;-webkit-text-stroke:1px var(--line);pointer-events:none;user-select:none;will-change:transform}
 .ab-in{position:relative;max-width:1200px;margin:0 auto;padding:0 clamp(1rem,5vw,3rem) clamp(4rem,10vh,7rem)}
-.ab-text{margin-top:2.4rem;font-weight:700;font-size:clamp(1.5rem,3.7vw,3.4rem);line-height:1.18;letter-spacing:-.012em}
+.ab-text{margin-top:2.4rem;font-weight:700;font-size:clamp(1.1rem,2.35vw,2.3rem);line-height:1.4;letter-spacing:-.04em}
 .ab-w{display:inline-block;white-space:pre}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin-top:clamp(3rem,8vh,5rem);background:var(--line);border:1px solid var(--line)}
 .stat{background:var(--bg);padding:clamp(1.2rem,3vw,2rem);display:flex;flex-direction:column;gap:.5rem;transition:background .6s}
@@ -454,6 +462,8 @@ const css = `
 .stat span{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 
 @media (max-width:860px){
+  .lede{font-size:13px}
+  .kicker{font-size:11.5px}
   .hero{height:auto;min-height:100svh;display:flex;flex-direction:column;padding-top:76px}
   .giant-wrap{position:relative;top:auto;margin-top:3vh}
   .giant{font-size:25.5vw}

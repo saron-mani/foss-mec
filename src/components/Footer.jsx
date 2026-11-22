@@ -119,7 +119,7 @@ const css = `
 .ft-ascii-wrap{margin:clamp(2rem,5vh,3.5rem) 0;overflow:hidden}
 .ft-ascii{font-size:min(2.28vw,30.5px);line-height:1;color:var(--fg);letter-spacing:0;font-weight:500}
 .ft-cta{display:flex;justify-content:space-between;align-items:flex-end;gap:2rem;flex-wrap:wrap;padding-bottom:clamp(2.5rem,6vh,4rem);border-bottom:1px solid var(--line)}
-.ft-cta h2{font-weight:900;font-size:clamp(1.8rem,4vw,3.6rem);line-height:1.04;letter-spacing:-.02em;max-width:20ch}
+.ft-cta h2{font-weight:700;font-size:clamp(1.3rem,2.7vw,2.5rem);line-height:1.15;letter-spacing:-.05em;max-width:24ch}
 .ft-cta em{font-style:italic;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;padding-right:.07em}
 .ft-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;padding:clamp(2rem,5vh,3.2rem) 0}
 .ft-col{display:flex;flex-direction:column;gap:.55rem;font-size:13px;align-items:flex-start}

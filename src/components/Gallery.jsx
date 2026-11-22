@@ -118,7 +118,7 @@ const css = `
 .gl-ghost{position:absolute;top:2rem;left:0;white-space:nowrap;font-family:'Anton',Impact,sans-serif;font-size:clamp(10rem,30vw,30rem);line-height:1;
   color:transparent;-webkit-text-stroke:1px var(--line);pointer-events:none;user-select:none;will-change:transform}
 .gl-head{position:relative;display:flex;flex-direction:column;gap:1.1rem;max-width:1320px;margin:0 auto clamp(2.5rem,7vh,4rem);padding:0 clamp(1rem,5vw,3rem)}
-.gl-title{font-weight:900;font-size:clamp(2.2rem,5.6vw,5.2rem);line-height:.98;letter-spacing:-.025em;max-width:14ch}
+.gl-title{font-weight:700;font-size:clamp(1.6rem,3.6vw,3.5rem);line-height:1.08;letter-spacing:-.05em;max-width:18ch}
 .gl-title em{font-style:italic;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;padding-right:.07em}
 .gl-sub{font-size:12.5px;color:var(--muted)}
 
@@ -137,14 +137,16 @@ const css = `
 @keyframes lbin{from{opacity:0}to{opacity:1}}
 .lb figure{max-width:min(1100px,100%);max-height:100%;display:flex;flex-direction:column;gap:.9rem;align-items:center}
 .lb img{max-width:100%;max-height:calc(100vh - 11rem);object-fit:contain;border-radius:12px;box-shadow:0 40px 100px -20px rgba(0,0,0,.8)}
-.lb figcaption{display:flex;gap:1rem;align-items:baseline;color:#eef1f8}
-.lb figcaption b{font-size:1.4rem;font-weight:900}
-.lb figcaption span{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:#5af0b4}
+.lb figcaption{display:flex;gap:1rem;align-items:baseline;color:#f4ecd8}
+.lb figcaption b{font-size:1.1rem;font-weight:700}
+.lb figcaption span{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
 .lb-x,.lb-nav{position:absolute;width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.25);color:#fff;font-size:18px;display:grid;place-items:center;transition:background .3s,color .3s}
 .lb-x:hover,.lb-nav:hover{background:#fff;color:#000}
 .lb-x{top:1.2rem;right:1.2rem}.lb-prev{left:1.2rem}.lb-next{right:1.2rem}
 
 @media (max-width:760px){
+  .gl-item{height:clamp(150px,23vh,210px)}
+  .lb-x,.lb-nav{width:48px;height:48px}
   .lb{padding:4rem 1rem}
   .lb-prev,.lb-next{top:auto;bottom:1rem}.lb-prev{left:calc(50% - 54px)}.lb-next{right:calc(50% - 54px)}
   .gl-cap{opacity:1;transform:none;font-size:10.5px}

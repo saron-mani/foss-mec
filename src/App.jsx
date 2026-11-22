@@ -17,17 +17,34 @@ gsap.registerPlugin(ScrollTrigger);
 /* Global styles + theme tokens. Dark is the default; light is the pale-blue
    palette lifted from the reference video. */
 const css = `
+/* Two palettes × dark/light.
+   velvet = golden yellow · dusty purple · charcoal
+   acid   = near-black · acid lime · violet   (default) */
 :root,[data-theme="dark"]{
-  --bg:#06080f; --bg2:#0b1020; --fg:#eef1f8; --muted:#8e98b0; --line:rgba(190,205,255,.14);
-  --card:rgba(120,150,255,.055); --accent:#5b8cff; --accent2:#ff6a3d; --accent3:#5af0b4; --ink:#eef1f8;
-  --grad:linear-gradient(100deg,#ff6a3d 0%,#ffb347 100%); --glow1:rgba(91,140,255,.16); --glow2:rgba(255,106,61,.09);
+  --bg:#15131a; --bg2:#1d1a25; --fg:#f4ecd8; --muted:#a59cb4; --line:rgba(244,236,216,.14);
+  --card:rgba(157,139,199,.07); --accent:#f6b93b; --accent2:#9a87cc; --accent3:#b9a8e6; --ink:#f4ecd8;
+  --giant:#f6b93b; --alt:#7d6ba6; --pill:transparent; --pillpad:0em;
+  --grad:linear-gradient(100deg,#f6b93b 0%,#ffd98a 100%); --glow1:rgba(246,185,59,.10); --glow2:rgba(125,107,166,.20);
   --grain:.06; color-scheme:dark;
 }
 [data-theme="light"]{
-  --bg:#b4dbe9; --bg2:#a3cfe0; --fg:#0a0f1f; --muted:#2b4a58; --line:rgba(8,20,50,.22);
-  --card:rgba(255,255,255,.42); --accent:#1d44e6; --accent2:#e8431a; --accent3:#007a55; --ink:#050505;
-  --grad:linear-gradient(100deg,#e8431a 0%,#ff8a1f 100%); --glow1:rgba(29,68,230,.14); --glow2:rgba(255,255,255,.35);
-  --grain:.1; color-scheme:light;
+  --bg:#e5e0ea; --bg2:#d9d2e2; --fg:#17141c; --muted:#5b5069; --line:rgba(23,20,28,.2);
+  --card:rgba(255,255,255,.5); --accent:#b87500; --accent2:#6a55a0; --accent3:#5a4690; --ink:#17141c;
+  --giant:#f2b01e; --alt:#6f5f97;
+  --grad:linear-gradient(100deg,#e09a00 0%,#a85d00 100%); --glow1:rgba(242,176,30,.20); --glow2:rgba(106,85,160,.14);
+  --grain:.09; color-scheme:light;
+}
+[data-palette="acid"][data-theme="dark"]{
+  --bg:#111111; --bg2:#181818; --fg:#f5f5ef; --muted:#9b9b92; --line:rgba(255,255,255,.14);
+  --card:rgba(255,255,255,.045); --accent:#d4f94e; --accent2:#a85cf2; --accent3:#cfa4f7; --ink:#d4f94e;
+  --giant:#f5f5ef; --alt:#d4f94e; --pill:#d4f94e; --pillpad:.35em;
+  --grad:linear-gradient(100deg,#d4f94e 0%,#f2ffa8 100%); --glow1:rgba(168,92,242,.22); --glow2:rgba(212,249,78,.07);
+}
+[data-palette="acid"][data-theme="light"]{
+  --bg:#f1f2ea; --bg2:#e4e6d8; --fg:#111111; --muted:#55594a; --line:rgba(17,17,17,.2);
+  --card:rgba(255,255,255,.6); --accent:#5a1fa8; --accent2:#7c2fd0; --accent3:#5a1fa8; --ink:#111111;
+  --giant:#111111; --alt:#b6e027; --pill:#111111; --pillpad:.35em;
+  --grad:linear-gradient(100deg,#5a1fa8 0%,#b04df0 100%); --glow1:rgba(182,224,39,.30); --glow2:rgba(124,47,208,.14);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{background:var(--bg);-webkit-text-size-adjust:100%}
@@ -58,13 +75,19 @@ body::after{content:"";position:fixed;inset:-50%;z-index:90;pointer-events:none;
 /* shared section atoms */
 .grad,.grad em,em.grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;padding-right:.07em}
 .sec-rule{font-size:clamp(9px,1.35vw,13px);color:var(--muted);line-height:1.2;overflow:hidden;white-space:pre}
-.serif{font-family:'Playfair Display',Georgia,serif}
+.serif{font-family:'Space Mono',ui-monospace,Menlo,Consolas,monospace;letter-spacing:-.045em}
 .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.85rem 1.3rem;border:1px solid var(--fg);border-radius:999px;
   font-size:13px;letter-spacing:.06em;text-transform:uppercase;transition:background .3s,color .3s,transform .3s}
 .btn:hover{background:var(--fg);color:var(--bg);transform:translateY(-2px)}
 .btn-solid{background:var(--fg);color:var(--bg)}
 .btn-solid:hover{background:var(--accent2);border-color:var(--accent2);color:#000}
 
+html{-webkit-tap-highlight-color:transparent}
+@media (hover:none){.ev-img,.tm-photo img,.gl-item img{filter:none!important}}
+@media (max-width:760px){
+  body{font-size:14px}
+  .btn{min-height:46px;padding:.8rem 1.2rem}
+}
 @media (prefers-reduced-motion:reduce){body::after{animation:none}}
 `;
 
@@ -76,19 +99,31 @@ const readTheme = () => {
   }
 };
 
+const readPalette = () => {
+  try {
+    return localStorage.getItem("foss-palette") || "acid";
+  } catch {
+    return "acid";
+  }
+};
+const META_BG = { velvet: { dark: "#15131a", light: "#e5e0ea" }, acid: { dark: "#111111", light: "#f1f2ea" } };
+
 export default function App() {
   const [theme, setTheme] = useState(readTheme);
+  const [palette, setPalette] = useState(readPalette);
 
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = theme;
+    document.documentElement.dataset.palette = palette;
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute("content", theme === "dark" ? "#06080f" : "#b4dbe9");
+    if (meta) meta.setAttribute("content", META_BG[palette][theme]);
     try {
       localStorage.setItem("foss-theme", theme);
+      localStorage.setItem("foss-palette", palette);
     } catch {
       /* storage can be unavailable (private mode) — theme just won't persist */
     }
-  }, [theme]);
+  }, [theme, palette]);
 
   /* Lenis smooth scroll, driven by GSAP's ticker so ScrollTrigger stays in sync */
   useEffect(() => {
@@ -121,9 +156,14 @@ export default function App() {
     <>
       <style>{css}</style>
       <ReactBitsStyles />
-      <Navbar theme={theme} onToggle={() => setTheme((t) => (t === "dark" ? "light" : "dark"))} />
+      <Navbar
+        theme={theme}
+        palette={palette}
+        onToggle={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+        onPalette={() => setPalette((p) => (p === "velvet" ? "acid" : "velvet"))}
+      />
       <main>
-        <Hero theme={theme} />
+        <Hero theme={theme} palette={palette} />
         <Events />
         <About />
         <Team />

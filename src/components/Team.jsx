@@ -210,6 +210,7 @@ function Member({ p }) {
 export default function Team() {
   const [teams, setTeams] = useState(TEAM_STATIC);
   const [year, setYear] = useState(TEAM_STATIC[0].year);
+  const [expanded, setExpanded] = useState(false);
   const sec = useRef(null);
   const grid = useRef(null);
 
@@ -250,7 +251,8 @@ export default function Team() {
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
       const cols = Math.max(1, getComputedStyle(grid.current).gridTemplateColumns.split(" ").length);
-      const lag = [0, 90, 30, 120, 60];
+      const k = window.innerWidth < 760 ? 0.35 : 1;
+      const lag = [0, 90, 30, 120, 60].map((v) => v * k);
       const slots = gsap.utils.toArray(".tm-slot");
 
       slots.forEach((slot, i) => {
@@ -268,10 +270,12 @@ export default function Team() {
       gsap.from(".tm-head > *", { y: 50, opacity: 0, duration: 1.1, ease: "power3.out", stagger: 0.1, scrollTrigger: { trigger: ".tm-head", start: "top 85%" } });
     }, sec);
     return () => ctx.revert();
-  }, [year, teams]);
+    requestAnimationFrame(() => ScrollTrigger.refresh());
+  }, [year, teams, expanded]);
 
   const pickYear = (y) => {
     if (y === year) return;
+    setExpanded(false);
     setYear(y);
     // let the new grid mount, then recompute trigger positions
     requestAnimationFrame(() => ScrollTrigger.refresh());
@@ -299,11 +303,16 @@ export default function Team() {
           </p>
         </div>
 
-        <div className="tm-grid" ref={grid} key={current.year}>
+        <div className={`tm-grid${expanded ? "" : " collapsed"}`} ref={grid} key={current.year}>
           {current.members.map((p, i) => (
             <Member p={p} key={p.name + i} />
           ))}
         </div>
+        {current.members.length > 6 && (
+          <button className="tm-more" onClick={() => setExpanded((e) => !e)} aria-expanded={expanded}>
+            {expanded ? "SHOW LESS ↑" : `SHOW ALL ${current.members.length} ↓`}
+          </button>
+        )}
       </div>
     </section>
   );
@@ -315,7 +324,7 @@ const css = `
   color:transparent;-webkit-text-stroke:1px var(--line);pointer-events:none;user-select:none;will-change:transform}
 .tm-in{position:relative;max-width:1320px;margin:0 auto;padding:0 clamp(1rem,5vw,3rem)}
 .tm-head{display:flex;flex-direction:column;gap:1.1rem;margin-bottom:clamp(2.5rem,7vh,4.5rem)}
-.tm-title{font-weight:900;font-size:clamp(2.2rem,5.6vw,5.4rem);line-height:.98;letter-spacing:-.025em;max-width:14ch}
+.tm-title{font-weight:700;font-size:clamp(1.6rem,3.6vw,3.5rem);line-height:1.08;letter-spacing:-.05em;max-width:18ch}
 .tm-title em{font-style:italic;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;padding-right:.07em}
 .tm-tabs{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.6rem}
 .tm-tabs button{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;padding:.5rem 1rem;border:1px solid var(--line);border-radius:999px;transition:background .3s,color .3s,border-color .3s}
@@ -336,11 +345,23 @@ const css = `
 .tm-ascii b{font-family:'Anton',Impact,sans-serif;font-weight:400;font-size:clamp(2rem,3.4vw,3rem);letter-spacing:.06em;color:var(--fg)}
 .tm-info{padding:.95rem 1rem 1.1rem;display:flex;flex-direction:column;gap:.35rem}
 .tm-role{font-size:10.5px;letter-spacing:.14em;color:var(--accent3);min-height:1.2em}
-.tm-name{font-weight:700;font-size:clamp(1.1rem,1.6vw,1.45rem);line-height:1.1}
+.tm-name{font-weight:700;font-size:clamp(.95rem,1.2vw,1.1rem);line-height:1.2}
 .tm-links{display:flex;gap:.9rem;margin-top:.25rem;font-size:11.5px;letter-spacing:.08em}
 .tm-links a{border-bottom:1px solid var(--line);transition:border-color .3s,color .3s}
 .tm-links a:hover{border-color:var(--accent2);color:var(--accent2)}
 
 @media (max-width:1100px){.tm-grid{grid-template-columns:repeat(3,1fr)}}
-@media (max-width:760px){.tm-grid{grid-template-columns:repeat(2,1fr);gap:.8rem;padding-bottom:60px}.tm-info{padding:.7rem .75rem .9rem}}
+.tm-more{display:none}
+@media (max-width:760px){
+  .tm{padding-top:5rem}
+  .tm-grid{grid-template-columns:repeat(2,1fr);gap:.8rem;padding-bottom:40px}
+  .tm-grid.collapsed .tm-slot:nth-child(n+7){display:none}
+  .tm-info{padding:.7rem .75rem .9rem}
+  .tm-role{font-size:10.5px}
+  .tm-links a{display:inline-flex;align-items:center;min-height:36px;font-size:12px}
+  .tm-tabs{flex-wrap:nowrap;overflow-x:auto;margin:0 -1rem;padding:0 1rem;scrollbar-width:none}
+  .tm-tabs::-webkit-scrollbar{display:none}
+  .tm-tabs button{flex:none;min-height:42px}
+  .tm-more{display:block;margin:1.2rem auto 0;min-height:48px;padding:.8rem 1.8rem;border:1px solid var(--fg);border-radius:999px;font-size:12px;letter-spacing:.14em;background:var(--card)}
+}
 `;
