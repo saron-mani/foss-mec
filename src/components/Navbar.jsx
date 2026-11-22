@@ -69,8 +69,7 @@ export default function Navbar({ theme, onToggle }) {
       <div className="nv-prog" ref={prog} />
       <div className="nv-in">
         <a href="#home" className="nv-logo" onClick={nav("home")} aria-label="FOSS MEC home">
-          <span className="nv-mark">{"{*}"}</span>
-          <span>FOSS<b>/</b>MEC</span>
+          <img className="nv-logo-img" src="/favicon.svg" alt="FOSS MEC logo" />
         </a>
 
         <nav className={`nv-links ${open ? "open" : ""}`} aria-label="Primary">
@@ -121,9 +120,8 @@ const css = `
   -webkit-backdrop-filter:blur(14px) saturate(1.2);border-bottom:1px solid var(--line)}
 .nv-prog{position:absolute;left:0;bottom:-1px;height:2px;width:100%;background:var(--accent2);transform:scaleX(0);transform-origin:0 50%}
 .nv-in{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.8rem clamp(1rem,4vw,3rem)}
-.nv-logo{display:flex;align-items:center;gap:.6rem;font-family:'Anton',Impact,sans-serif;font-size:1.35rem;letter-spacing:.04em}
-.nv-logo b{color:var(--accent2);font-weight:400;padding:0 .08em}
-.nv-mark{font-family:'DM Mono',monospace;font-size:.9rem;color:var(--accent);border:1px solid var(--line);border-radius:6px;padding:.1rem .4rem}
+.nv-logo{display:flex;align-items:center}
+.nv-logo-img{display:block;width:auto;height:2.35rem;max-width:none}
 .nv-links{display:flex;gap:clamp(1rem,3vw,2.4rem);font-size:12.5px;letter-spacing:.12em}
 .nv-links a{position:relative;padding:.3rem 0}
 .nv-links a::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--fg);transform:scaleX(0);transform-origin:0 50%;transition:transform .4s cubic-bezier(.2,.8,.2,1)}
@@ -151,6 +149,7 @@ const css = `
 
 @media (max-width:760px){
   .nv-in{padding:.55rem 1rem;gap:.6rem}
+  .nv-logo-img{height:2rem}
   .nv-right{gap:.5rem}
   .nv-burger{display:block;width:44px;height:44px}
   .nv-burger span{left:11px;right:11px}
