@@ -3,6 +3,21 @@
 Vite + React. Smooth scroll with **Lenis**, motion with **GSAP + ScrollTrigger**, background with **Vanta.js (NET)**,
 React Bits–style components (DecryptedText, SpotlightCard, ScrollVelocity, ASCII scramble) and ASCII art (Tux + banner).
 
+## Technologies Used
+
+- **React 18 + React DOM** — component-based UI, with `src/main.jsx` as the entry point.
+- **Vite 5** — dev server and production build (`@vitejs/plugin-react`).
+- **Lenis** — smooth / legato scrolling, driven by the GSAP ticker.
+- **GSAP + ScrollTrigger** — intro timelines, parallax layers, scrubbed reveals, pinned horizontal gallery and counters.
+- **Three.js + Vanta.js (NET)** — animated WebGL network background in the hero.
+- **React Bits–style helpers** — `DecryptedText`, `SpotlightCard`, `ScrollVelocity` and `AsciiReveal`, implemented locally in `ReactBits.jsx`.
+- **ASCII art** — Tux, banner, avatars and section rules in `AsciiArt.jsx`.
+- **Self-hosted fonts** — Anton, DM Mono and Space Mono are bundled and preloaded for stable first paint.
+
+## Setup Instructions
+
+Requires Node.js and npm.
+
 ```
 npm install
 npm run dev      # http://localhost:5173
@@ -25,7 +40,7 @@ src/
     ReactBits.jsx         shared React Bits–style helpers
     AsciiArt.jsx          ASCII art data
 ```
-All CSS lives inside the components (no .css files).
+Styling is co-located in `<style>` blocks inside the components — the running app does not import a separate CSS file.
 
 ## Data
 Scraped from foss.mec.ac.in (its Sanity CMS) and embedded as fallback. Events.jsx / Team.jsx also query the CMS
