@@ -33,3 +33,6 @@ at runtime and merge/replace with fresher data when reachable.
 
 ## Theme
 Dark by default with a dark/light toggle in the top bar. Palette: near-black · acid lime · violet. Tokens are at the top of `src/App.jsx`; the Vanta/ink colours are in `Hero.jsx`.
+
+## Design inspiration
+The layout and motion were inspired by the attached reference media — oversized condensed display type layered behind ASCII art, a floating network background, fine-grain texture, and legato parallax transitions between sections. Content and branding come from [FOSS MEC](https://foss.mec.ac.in/).
